@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<title>Neighborhood Map</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="initial-scale=1.0">
+		<link rel="stylesheet" href="bower_components/jquery-ui/themes/smoothness/jquery-ui.min.css">
+		<link rel="stylesheet" href="css/style.css">
+
+	</head>
+	<body>
+			<!-- value update blur is needed, because the jquery-ui autocomplete messes up the change event -->
+			<input id="filter" data-bind="value: filteredAnimal, valueUpdate:'blur'" class="controls" type="text" placeholder="Search Animal">
+		    <button id="showInfo" class="controls" data-bind="click: updateInfo" >Show Info</button>
+
+		<div id="map">
+
+		</div>
+		 <div id = "infoPanel" data-bind="with: selectedAnimal">
+		    	<img id="infoImage"  src="" alt="Animal image"  data-bind="attr: {src: imgSrc}">
+		 </div>
+		<script src="bower_components/jquery/dist/jquery.js"></script>
+		<script src="bower_components/jquery-ui/jquery-ui.min.js"></script>
+		<script src="bower_components/knockout/dist/knockout.js"></script>
+		<script src="js/app.js"></script>
+		<script src="https://maps.googleapis.com/maps/api/js?libraries=places&key=AIzaSyBvSyOJDU2J8YelkMVS4LGsuI0KVNGqu-I">
+		</script>
+	</body>
+</html>

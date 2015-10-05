@@ -1,0 +1,39 @@
+{
+  "name": "Neighborhood Map",
+  "version": "1.0.0",
+  "description": "Neighborhood Map",
+  "main": "Gruntfile.js",
+  "dependencies": {
+    "grunt-contrib-watch": "^0.6.1",
+    "grunt": "^0.4.5"
+  },
+  "devDependencies": {
+    "grunt-contrib-clean": "^0.6.0",
+    "grunt-contrib-copy": "^0.8.1",
+    "grunt-contrib-cssmin": "^0.14.0",
+    "grunt-contrib-jshint": "^0.11.2",
+    "grunt-contrib-uglify": "^0.9.2",
+    "grunt-contrib-watch": "^0.6.1",
+    "grunt-criticalcss": "^0.5.0",
+    "grunt-cssbeautifier": "^0.1.2",
+    "grunt-responsive-images": "^0.1.6"
+  },
+  "scripts": {
+    "test": "testit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bluebee123/frontend-nanodegree-arcade-game.git"
+  },
+  "keywords": [
+    "arcade",
+    "game",
+    "nanodegree"
+  ],
+  "author": "nh",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bluebee123/frontend-nanodegree-arcade-game/issues"
+  },
+  "homepage": "https://github.com/bluebee123/frontend-nanodegree-arcade-game#readme"
+}
