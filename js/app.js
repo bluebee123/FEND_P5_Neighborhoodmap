@@ -57,25 +57,17 @@ var Map = function() {
 	    	draggable: false
 		});
 
-		//add searchbox
+		//add some additional elements to the map: filter search box
 		var searchControlDiv = document.getElementById('filter');
     	searchControlDiv.index = 1;
     	this.map.controls[google.maps.ControlPosition.TOP_LEFT].push(searchControlDiv);
 
-    	var filterButton = document.getElementById('showInfo');
-    	filterButton.index=1;
-    	this.map.controls[google.maps.ControlPosition.TOP_LEFT].push(filterButton);
-
-    	//on the infoPanel are elements with information to markers
 
     	var listv = document.getElementById('listview');
     	listv.index=1;
     	this.map.controls[google.maps.ControlPosition.LEFT].push(listv);
 
-    /*	var infoPanel = document.getElementById('infoPanel');
-    	infoPanel.index=1;
-    	this.map.controls[google.maps.ControlPosition.LEFT].push(infoPanel);
-*/
+
 	}
 
 	this.getMap = function() {
@@ -88,7 +80,7 @@ var Map = function() {
 // ko Viewmodel
 var ViewModel = function(map) {
 	var self = this;
-	self.map = map.getMap();
+	self.map = map.getMap(); //save the actual google map
 	self.filteredAnimal=ko.observable("");
 	self.selectedAnimal = ko.observable();
 	self.lastAnimal = ko.observable();
@@ -110,6 +102,7 @@ var ViewModel = function(map) {
 	self.animalList = ko.observableArray([]);
 	initialAnimals.forEach( function(animalItem) {
 		//add the google maps markers
+		var tmp = ko.observable(animalItem);
 		for(var i = 0; i < animalItem.lng.length; i++) {
 			var alat = animalItem.lat[i];
 			var alng = animalItem.lng[i];
@@ -119,17 +112,24 @@ var ViewModel = function(map) {
 				animation: google.maps.Animation.DROP,
 				name: animalItem.anName
 	         })
-			animalItem.myMarkers.push(marker);
+			//add click listeners to the markers, setting the current selected Animal.
+			marker.addListener('click', (function(animal) {
+    			return function() {
+    				self.setSelectedAnimal(animal);
+    			};
+  			})(tmp()));
+
+			tmp().myMarkers.push(marker);
 		}
-		self.animalList.push(animalItem);
+		self.animalList().push(tmp);
 	});
 
 //the list shows only the entrys matching the content of the search box
 	self.filteredItems = ko.computed(function() {
 		var search  = self.filteredAnimal().toLowerCase();
 		return ko.utils.arrayFilter(self.animalList(), function (animal) {
-        	var show = animal.anName.toLowerCase().indexOf(search) >= 0;
-        	animal.myMarkers.forEach(function(marker){
+        	var show = animal().anName.toLowerCase().indexOf(search) >= 0;
+        	animal().myMarkers.forEach(function(marker){
         		marker.setVisible(show);
         	});
         	return show;
@@ -154,7 +154,11 @@ var ViewModel = function(map) {
 		self.lastAnimal(self.selectedAnimal());
 		self.infoWindow().setContent(self.infoContent());
 	};
-
+//helper function which is called when clicking on a marker which are not bound to knockout.
+	self.setSelectedAnimal = function(animal) {
+		this.selectedAnimal(animal);
+		self.updateInfo();
+	}
 //set the bounce animation of an animal marker on or off
 	self.bounceMarkers = function(animal, animation) {
 		animal.myMarkers.forEach( function(marker) {
