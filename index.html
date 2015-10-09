@@ -10,13 +10,16 @@
 	</head>
 	<body>
 		<div id="infContent" data-bind="with: selectedAnimal" style="display:none">
-			<h4 data-bind="text: anName"></h4>'
+			<div id="infContainer">
+			<h3 data-bind="text: anName"></h3>
+			<p> Seen on: <span data-bind="text: dateSeen"></span></p>
 				<img id="infoImage" src="" data-bind="attr: {src: imgSrc}" alt="Animal image">
-				<div id="wikiCont">
-				<a data-bind="attr: { href: $parent.wikiLink}, text:$parent.wikiLink"></a>
-				<p data-bind="text: $parent.wikiParagraph"></p>
+				<div id="wikiCont" >
+					<a data-bind="attr: { href: $parent.wikiLink}, text:$parent.wikiLink"></a>
+					<p data-bind="text: $parent.wikiParagraph"></p>
 				</div>
 			</div>
+		</div>
 			<!-- value update keyup is needed, because the jquery-ui autocomplete messes up the change event -->
 			<input id="filter" data-bind="value: filteredAnimal, valueUpdate: 'keyup'" class="controls" type="text" placeholder="Search Animal" >
 		<div id="map">

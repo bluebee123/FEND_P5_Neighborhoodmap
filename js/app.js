@@ -5,6 +5,7 @@ var initialAnimals=[
 		imgSrc: "http://www.australiananimallearningzone.com/wp-content/uploads/2012/09/Southern-Right-Whale-Pictures-300x272.jpg",
 		lat: [-38.428914],
 		lng: [142.521175],
+		dateSeen: ["02.09.2015"],
 		myMarkers: []
 	},
 	{
@@ -12,6 +13,7 @@ var initialAnimals=[
 		imgSrc: "img/kang.jpg",
 		lat: [-38.698435,-38.501899],
 		lng: [143.229360,145.238695],
+		dateSeen: ["02.09.2015","16.09.2015"],
 		myMarkers: []
 	},
 	{
@@ -19,6 +21,7 @@ var initialAnimals=[
 		imgSrc: "img/echidna.jpg",
 		lat: [-37.181397],
 		lng: [145.861132],
+		dateSeen: ["02.10.2015"],
 		myMarkers: []
 	},
 	{
@@ -26,6 +29,7 @@ var initialAnimals=[
 		imgSrc: "img/littlePenguin.jpg",
 		lat: [-38.514876],
 		lng: [145.144377],
+		dateSeen: ["16.09.2015"],
 		myMarkers: []
 	},
 	{
@@ -33,6 +37,7 @@ var initialAnimals=[
 		imgSrc: "img/possum.jpg",
 		lat: [-37.930777],
 		lng: [145.111319],
+		dateSeen: ["20.08.2015"],
 		myMarkers: []
 	},
 	{
@@ -40,6 +45,7 @@ var initialAnimals=[
 		imgSrc: "img/koala.jpg",
 		lat: [-38.805814],
 		lng: [143.535075],
+		dateSeen: ["02.09.2015"],
 		myMarkers: []
 	}
 
@@ -57,7 +63,12 @@ var Map = function() {
 	    	draggable: false,
 	    	panControl: false
 		});
-
+	    this.overlay = new google.maps.OverlayView();
+	    this.overlay.draw = function() {};
+    	this.overlay.setMap(this.map);
+    /*google.maps.event.addListenerOnce(map, 'idle', function() {
+        callback();
+    });*/
 		//add some additional elements to the map: filter search box
 		var searchControlDiv = document.getElementById('filter');
     	searchControlDiv.index = 1;
@@ -75,25 +86,28 @@ var Map = function() {
 		return this.map;
 	}
 
+	this.getOverlay = function() {
+		return this.overlay;
+	}
+
 };
 
 
 // ko Viewmodel
-var ViewModel = function(map) {
+var ViewModel = function(map, overlay) {
 
 
 	var self = this;
-	self.map = map.getMap(); //save the actual google map
+	self.map = map; //save the actual google map
+	self.overlay = overlay;
 	self.filteredAnimal=ko.observable("");
 	self.selectedAnimal = ko.observable();
 	self.selectedAnimal.subscribe(function() {
 		//whenever the selected Animal changes, we fire the ajax
 		//Wikipedia
-		console.log("sel. animal changed to: " + self.selectedAnimal().anName);
 		self.wikiAjax(self.selectedAnimal().anName);
 		//all the markers of this animal are set to active
 		self.selectedAnimal().myMarkers.forEach(function(marker) {
-			console.log("activating: " + marker().id);
 			marker().active(true);
 		});
 		if(self.lastAnimal()===null) {
@@ -112,10 +126,10 @@ var ViewModel = function(map) {
 //set up the info bubble, its content changing based on the selected animal.
 	self.infoBubble = ko.observable(new InfoBubble({
 		disableAutoPan: true,
-		backgroundColor: 'transparent',
-		content: $("#infContent").html()
-	}));
+		content: $("#infContent").html(),
+		borderRadius: 0,
 
+	}));
 	self.wikiLink = ko.observable("");
 	self.wikiParagraph = ko.observable("");
 //add animals to the list
@@ -141,8 +155,6 @@ var ViewModel = function(map) {
     				self.selectedAnimal(animalItem);
     			};
   			})(animalItem));
-
-
 			animalItem.myMarkers.push(marker);
 		}
 		//add active subscriptions to each marker, which will toggle animation and close infoBubbles if active(false)
@@ -163,11 +175,6 @@ var ViewModel = function(map) {
 		});
 		self.animalList().push(animalItem);
 	});
-
-
-
-
-
 
 	self.listSize = ko.computed(function() {
 		return self.animalList().length;
@@ -209,11 +216,47 @@ var ViewModel = function(map) {
 				self.wikiLink('http://en.wikipedia.org/wiki/' + response[1][0]);
 				self.wikiParagraph( response[2][0]);
 				//only after success open the info bubble
-				self.infoBubble().setContent($("#infContent").html());
-				//only one infoBubble, even if more markers are present
-				self.infoBubble().open(self.map,self.selectedAnimal().myMarkers[0]());
+				self.openInfoBubble();
+
         	}
    		 });
+	};
+
+	self.openInfoBubble = function() {
+		//only one infoBubble, even if more markers are present, so only the first marker
+		var marker = self.selectedAnimal().myMarkers[0];
+		console.log("initial pos: " + marker().getPosition());
+		var pixPosition = self.overlay.getProjection().fromLatLngToDivPixel(marker().getPosition());
+
+		var xPix = pixPosition.x;
+		var yPix = pixPosition.y;
+		var contentWidth = $("#infContent").width();
+		var contentHeight = $("#infContent").height();
+		if(xPix > window.innerWidth-contentWidth/2) {
+			//we are too close to the right edge
+			console.log("a");
+			xPix = window.innerWidth - contentWidth/2 -20;
+		}
+		if(xPix < contentWidth/2) {
+			console.log("b");
+			//too close to the left edge
+			xPix = contentWidth/2;
+		}
+
+		if(yPix < contentHeight) {
+			yPix = yPix+ contentHeight + 30;
+		} else {
+			yPix = yPix - 50;
+		}
+
+		var tmp = new google.maps.Point(xPix,yPix);
+
+		var lngLatPos = self.overlay.getProjection().fromDivPixelToLatLng(new google.maps.Point(xPix,yPix));
+		console.log("new pos" + lngLatPos);
+		self.infoBubble().setContent($("#infContent").html());
+		self.infoBubble().open(self.map);
+		//self.infoBubble().open(self.map,self.selectedAnimal().myMarkers[0]());
+		self.infoBubble().setPosition(lngLatPos);
 	};
 
 
@@ -257,7 +300,7 @@ var testData = function() {
 $(window).load(function() {
   var map = new Map();
   map.initialize();
-  ko.applyBindings(new ViewModel(map));
+  ko.applyBindings(new ViewModel(map.getMap(), map.getOverlay()));
   //testData();
 
 

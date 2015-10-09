@@ -9,7 +9,7 @@ html, body {
       }
 
 
-      .controls {
+.controls {
   margin-top: 10px;
   border: 1px solid transparent;
   border-radius: 2px 0 0 2px;
@@ -31,26 +31,6 @@ html, body {
   width: 300px;
 }
 
- #showInfo,
- #hideInfo,
- {
-          position:absolute;
-          bottom:2%;
-          color: #fff;
-          background-color: #4d90fe;
-          padding:  0 11px 0 13px;;
-          border-radius: 2px;
-          box-sizing: border-box;
-          -moz-box-sizing: border-box;
-
-          outline: none;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-          alignment-baseline:central;
-          width:100px;
-          text-align:center;
-          text-decoration:none;
-}
-
 #listview {
 	margin-top: 4px;
 	margin-left: 13px;
@@ -61,36 +41,23 @@ html, body {
 	border-color: #fff;
 	border-width: 2px;
 }
-#animBtn {
 
+#infContainer {
+	margin: 1 1 1 1;
+	font-family: Roboto;
+  	font-size: 12px;
+  	display: block;
 
-          bottom:2%;
-          color: #fff;
-          background-color: #4d90fe;
-          padding:  0 11px 0 13px;;
-          border-radius: 2px;
-          box-sizing: border-box;
-          -moz-box-sizing: border-box;
-          outline: none;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-          alignment-baseline:central;
-          width:300px;
-          text-align:center;
-          text-decoration:none;
 }
 
-
-#showInfo:hover{
-   background-color:#3B6EC2;
-}
 
 #infoImage {
-	max-width: 200px;
+	max-width: 100px;
 }
 
 #wikiCont {
-	background: white;
-
+	border: 1px solid;
+	border-radius: 10;
 }
 #infoContent {
 	width: 400px;
@@ -100,6 +67,6 @@ html, body {
 	border-radius: 20%;
 }
 
-#infoPanel:hover {
-	opacity: 1;
+#wikiCont {
+	max-width: 200px;
 }
