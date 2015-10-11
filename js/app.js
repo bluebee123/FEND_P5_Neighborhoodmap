@@ -62,27 +62,37 @@ var Map = function() {
 	    	zoom: 8,
 	    	mapTypeControl: false,
 	    	draggable: false,
-	    	panControl: false
+	    	panControl: false,
+	    	scrollwheel: false
 		});
 	    this.overlay = new google.maps.OverlayView();
 	    this.overlay.draw = function() {};
     	this.overlay.setMap(this.map);
     	this.initBubble();
-    /*google.maps.event.addListenerOnce(map, 'idle', function() {
-        callback();
-    });*/
-		//add some additional elements to the map: filter search box
-	/*	var searchControlDiv = document.getElementById('filter');
-    	searchControlDiv.index = 1;
-    	this.map.controls[google.maps.ControlPosition.TOP_LEFT].push(searchControlDiv);
-
-    	//and the list view
-    	var listv = document.getElementById('listview');
-    	listv.index=0;
-    	this.map.controls[google.maps.ControlPosition.LEFT].push(listv);*/
 
 	};
 
+	this.flickrMarkers = [];
+
+	this.resetflickrMarkers = function() {
+		this.flickrMarkers.forEach(function(marker) {
+			marker.setVisible(false);
+		})
+		this.flickerMarkers = [];
+	}
+
+	this.addFlickrMarker = function(lon, lat, name, by) {
+		console.log("lon " + lon + " lat " + lat + " name " + name);
+		var marker = new google.maps.Marker({
+ 				position: {lat: lat, lng: lon},
+             	map: this.map,
+				title: name,
+				animation: google.maps.Animation.DROP,
+				icon: "img/zoo.png"
+	         });
+
+		this.flickrMarkers.push(marker);
+	}
 	this.initBubble = function() {
 	//we have one infobubble, whose position gets adapted to the chosen marker, as well as its content
 		this.infoBubble = new InfoBubble({
@@ -119,14 +129,15 @@ var Map = function() {
 		var tmp = new google.maps.Point(xPix,yPix);
 
 		var lngLatPos = this.overlay.getProjection().fromDivPixelToLatLng(new google.maps.Point(xPix,yPix));
-		this.infoBubble.updateTab(0,INFOTABTITLE,$("#infContent").html());
-		this.infoBubble.updateTab(1,FLICKRTABTITLE,$("#flickrContent").html());
 		this.infoBubble.open(this.map);
 		//self.infoBubble().open(self.map,self.selectedAnimal().myMarkers[0]());
 		this.infoBubble.setPosition(lngLatPos);
 		this.infoBubble.setZIndex(2000);
 	};
 
+	this.updateIBContent = function(index, title, content) {
+		this.infoBubble.updateTab(index,title,content);
+	};
 	this.closeInfoBubble = function(marker){
 	//the infobubble get closed as well
 		this.infoBubble.close(this.map,marker);
@@ -153,24 +164,35 @@ var ViewModel = function(mapObj) {
 	self.map = mapObj.getMap(); //save the actual google map
 
 	self.filteredAnimal=ko.observable("");
+
 	self.selectedAnimal = ko.observable(null);
 	self.lastAnimal =null;
 	//subscribe to changes of selectedAnimal manually in order to update the google map markers
 	self.selectedAnimal.subscribe(function() {
 		//whenever the selected Animal changes, we fire the ajax
 		//Wikipedia
-		self.wikiAjax(self.selectedAnimal().anName);
-		//TODO: only set content of bubble, not draw whole bubble?!
-		//remove the class activeElement from current ones
-		$(".activeElement").toggleClass("activeElement");
+		if(self.selectedAnimal()!==null){
+			var aniName = self.selectedAnimal().anName;
 
-		var element = $( "a:contains(" + self.selectedAnimal().anName + ")" );
-		element.toggleClass("activeElement");
+
+			self.wikiAjax(aniName);
+			self.flickrAjax(aniName);
+			self.mapObject.openInfoBubble(self.selectedAnimal().myMarkers[0]);
+
+			//TODO: only set content of bubble, not draw whole bubble?!
+			//remove the class activeElement from current ones
+			var element = $( "a:contains(" + aniName + ")" );
+			element.toggleClass("activeElement");
+			self.selectedAnimal().myMarkers.forEach(function(marker) {
+				marker.active(true);
+			});
+		}
+		$(".activeElement").toggleClass("activeElement");
+		self.mapObject.resetflickrMarkers();
+
 
 		//all the markers of this animal are set to active
-		self.selectedAnimal().myMarkers.forEach(function(marker) {
-			marker.active(true);
-		});
+
 		if(self.lastAnimal===null) {
 			self.lastAnimal=self.selectedAnimal();
 
@@ -183,6 +205,9 @@ var ViewModel = function(mapObj) {
 		}
 	});
 
+	self.clearSelection = function() {
+		self.selectedAnimal(null);
+	}
 	self.setSelectedAnimal = function(data) {
 		self.selectedAnimal(data);
 	}
@@ -267,8 +292,7 @@ var ViewModel = function(mapObj) {
 				self.wikiLink('http://en.wikipedia.org/wiki/' + response[1][0]);
 				self.wikiParagraph( response[2][0]);
 				//trigger the flickr Ajax, so the info bubble gets updated by both only once
-				self.flickrAjax(self.selectedAnimal().anName);
-
+				self.mapObject.updateIBContent(0,INFOTABTITLE,$("#infContent").html());
 
         	}
    		 });
@@ -292,6 +316,9 @@ var ViewModel = function(mapObj) {
 		$.getJSON( flickrURL, function( data ) {
 			var photoItem = {};
 			self.flickrImages([]);
+			data.photos.photo.forEach(function(flick) {
+       	 		self.mapObject.addFlickrMarker(parseFloat(flick.longitude),parseFloat(flick.latitude),flick.title);
+       	 	});
 			var showArray = [];
 			if(data.photos.photo.length < 15) {
 				showArray = data.photos.photo;
@@ -307,11 +334,11 @@ var ViewModel = function(mapObj) {
        	 		photoItem.title = photo.title;
        	 		photoItem.o_url = photo.url_o;
        	 		photoItem.t_url = photo.url_t;
-       	 		photoItem.lon = photo.longitude;
-       	 		photoItem.lat = photo.latitude;
        	 		self.flickrImages.push(photoItem);
        	 	});
-         self.mapObject.openInfoBubble(self.selectedAnimal().myMarkers[0]);
+
+       	 	self.mapObject.updateIBContent(1,FLICKRTABTITLE,$("#flickrContent").html());
+
 
     	}).error(function(e) {
     		console.log(e);

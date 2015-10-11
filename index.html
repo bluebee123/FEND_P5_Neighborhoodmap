@@ -13,12 +13,14 @@
 		<div id="container">
 			<div id="searchmenu">
 				<!-- value update keyup is needed, because the jquery-ui autocomplete messes up the change event -->
-				<input id="filter" data-bind="value: filteredAnimal, valueUpdate: 'keyup'" type="text" placeholder="Search Animal" >
+				<input id="filter" data-bind="value: filteredAnimal, valueUpdate: 'keyup', click: clearSelection" type="text" placeholder="Search Animal" >
+
 				<ul id="listview" data-bind="foreach: filteredItems">
 					<li >
 					<a  data-bind="text: anName, click: $parent.setSelectedAnimal"></a>
 					</li>
 	        	</ul>
+	        	<p id="infotext"> Purple paws show places where other people on Flickr spotted the animal or something related to it! </p>
 	        </div>
 
 			<div id="map">

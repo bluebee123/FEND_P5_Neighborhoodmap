@@ -38,7 +38,7 @@ html, body {
   margin-top: 5px;
   padding: 0;
 	 width: 100%;
-
+   height:80%;
 }
 
 #listview li {
@@ -58,9 +58,10 @@ display:block;
 }
 
 
-  #listview a  {
+ #infotext, #listview a  {
    display:block;
   width:90%;
+
   border:1px solid #808;
   font-family:arial, verdana, sans-serif;
   font-size:0.8em;
@@ -93,7 +94,6 @@ display:block;
 
 #wikiCont {
 	border: 1px solid;
-	border-radius: 10%;
 }
 #infoContent {
 	width: 400px;
