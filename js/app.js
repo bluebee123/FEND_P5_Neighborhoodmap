@@ -81,13 +81,12 @@ var Map = function() {
 		this.flickerMarkers = [];
 	}
 
-	this.addFlickrMarker = function(lon, lat, name, by) {
-		console.log("lon " + lon + " lat " + lat + " name " + name);
+	this.addFlickrMarker = function(lon, lat, name) {
+
 		var marker = new google.maps.Marker({
  				position: {lat: lat, lng: lon},
              	map: this.map,
 				title: name,
-				animation: google.maps.Animation.DROP,
 				icon: "img/zoo.png"
 	         });
 
@@ -111,9 +110,9 @@ var Map = function() {
 		var yPix = pixPosition.y;
 		var contentWidth = $("#infContent").width();
 		var contentHeight = $("#infContent").height();
-		if(xPix > window.innerWidth-contentWidth/2) {
+		if(xPix > $("#map").width -contentWidth/2) {
 			//we are too close to the right edge
-			xPix = window.innerWidth - contentWidth/2 -20;
+			xPix = $("#map").width - contentWidth/2 -20;
 		}
 		if(xPix < contentWidth/2) {
 			//too close to the left edge
@@ -314,7 +313,7 @@ var ViewModel = function(mapObj) {
 
 		flickrURL+="&jsoncallback=?";
 		$.getJSON( flickrURL, function( data ) {
-			var photoItem = {};
+
 			self.flickrImages([]);
 			data.photos.photo.forEach(function(flick) {
        	 		self.mapObject.addFlickrMarker(parseFloat(flick.longitude),parseFloat(flick.latitude),flick.title);
@@ -330,13 +329,17 @@ var ViewModel = function(mapObj) {
  					data.photos.photo.splice(index,1);
 				}
 			}
-       	 	showArray.forEach( function(photo) {
-       	 		photoItem.title = photo.title;
-       	 		photoItem.o_url = photo.url_o;
-       	 		photoItem.t_url = photo.url_t;
-       	 		self.flickrImages.push(photoItem);
-       	 	});
 
+			var helperArray = [];
+       	 	for(var i = 0; i < showArray.length; i++) {
+       	 		var photoItem = {};
+       	 		photoItem.title = showArray[i].title;
+       	 		photoItem.o_url = showArray[i].url_o;
+       	 		photoItem.t_url = showArray[i].url_t;
+       	 		helperArray[i]=photoItem;
+       	 	}
+
+       	 	self.flickrImages(helperArray);
        	 	self.mapObject.updateIBContent(1,FLICKRTABTITLE,$("#flickrContent").html());
 
 
