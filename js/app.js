@@ -67,20 +67,69 @@ var Map = function() {
 	    this.overlay = new google.maps.OverlayView();
 	    this.overlay.draw = function() {};
     	this.overlay.setMap(this.map);
+    	this.initBubble();
     /*google.maps.event.addListenerOnce(map, 'idle', function() {
         callback();
     });*/
 		//add some additional elements to the map: filter search box
-		var searchControlDiv = document.getElementById('filter');
+	/*	var searchControlDiv = document.getElementById('filter');
     	searchControlDiv.index = 1;
     	this.map.controls[google.maps.ControlPosition.TOP_LEFT].push(searchControlDiv);
 
     	//and the list view
     	var listv = document.getElementById('listview');
     	listv.index=0;
-    	this.map.controls[google.maps.ControlPosition.LEFT].push(listv);
+    	this.map.controls[google.maps.ControlPosition.LEFT].push(listv);*/
 
+	};
 
+	this.initBubble = function() {
+	//we have one infobubble, whose position gets adapted to the chosen marker, as well as its content
+		this.infoBubble = new InfoBubble({
+			disableAutoPan: true,
+			borderRadius: 0,
+			arrowSize: 0
+
+		});
+		this.infoBubble.addTab(INFOTABTITLE, $("#infContent").html());
+		this.infoBubble.addTab(FLICKRTABTITLE, $("#flickrContent").html());
+	};
+	this.openInfoBubble = function(marker) {
+		//only one infoBubble, even if more markers are present, so only the first marker
+		var pixPosition = this.overlay.getProjection().fromLatLngToDivPixel(marker.getPosition());
+		var xPix = pixPosition.x;
+		var yPix = pixPosition.y;
+		var contentWidth = $("#infContent").width();
+		var contentHeight = $("#infContent").height();
+		if(xPix > window.innerWidth-contentWidth/2) {
+			//we are too close to the right edge
+			xPix = window.innerWidth - contentWidth/2 -20;
+		}
+		if(xPix < contentWidth/2) {
+			//too close to the left edge
+			xPix = contentWidth/2 + 20;
+		}
+
+		if(yPix < contentHeight) {
+			yPix = yPix+ contentHeight + 30;
+		} else {
+			yPix = yPix - 50;
+		}
+
+		var tmp = new google.maps.Point(xPix,yPix);
+
+		var lngLatPos = this.overlay.getProjection().fromDivPixelToLatLng(new google.maps.Point(xPix,yPix));
+		this.infoBubble.updateTab(0,INFOTABTITLE,$("#infContent").html());
+		this.infoBubble.updateTab(1,FLICKRTABTITLE,$("#flickrContent").html());
+		this.infoBubble.open(this.map);
+		//self.infoBubble().open(self.map,self.selectedAnimal().myMarkers[0]());
+		this.infoBubble.setPosition(lngLatPos);
+		this.infoBubble.setZIndex(2000);
+	};
+
+	this.closeInfoBubble = function(marker){
+	//the infobubble get closed as well
+		this.infoBubble.close(this.map,marker);
 	}
 
 	this.getMap = function() {
@@ -94,21 +143,29 @@ var Map = function() {
 };
 
 
+
 // ko Viewmodel
-var ViewModel = function(map, overlay) {
+var ViewModel = function(mapObj) {
 
 
 	var self = this;
-	self.map = map; //save the actual google map
-	self.overlay = overlay;
+	self.mapObject = mapObj;
+	self.map = mapObj.getMap(); //save the actual google map
+
 	self.filteredAnimal=ko.observable("");
-	self.selectedAnimal = ko.observable();
+	self.selectedAnimal = ko.observable(null);
 	self.lastAnimal =null;
+	//subscribe to changes of selectedAnimal manually in order to update the google map markers
 	self.selectedAnimal.subscribe(function() {
 		//whenever the selected Animal changes, we fire the ajax
 		//Wikipedia
 		self.wikiAjax(self.selectedAnimal().anName);
-		//Flickr
+		//TODO: only set content of bubble, not draw whole bubble?!
+		//remove the class activeElement from current ones
+		$(".activeElement").toggleClass("activeElement");
+
+		var element = $( "a:contains(" + self.selectedAnimal().anName + ")" );
+		element.toggleClass("activeElement");
 
 		//all the markers of this animal are set to active
 		self.selectedAnimal().myMarkers.forEach(function(marker) {
@@ -126,23 +183,17 @@ var ViewModel = function(map, overlay) {
 		}
 	});
 
-
-//set up the info bubble, its content changing based on the selected animal.
-	self.infoBubble = new InfoBubble({
-		disableAutoPan: true,
-		borderRadius: 0,
-		arrowSize: 0
-
-	});
-	self.infoBubble.addTab(INFOTABTITLE, $("#infContent").html());
-	self.infoBubble.addTab(FLICKRTABTITLE, $("#flickrContent").html());
+	self.setSelectedAnimal = function(data) {
+		self.selectedAnimal(data);
+	}
+	//Wikipedia data which is bound to a display:none div which is the content of the infoBubble
 	self.wikiLink = ko.observable("");
 	self.wikiParagraph = ko.observable("");
-
+	//flickrImage data gets saved in an array. bound to a hidden div, which becomes part of Infobubble
 	self.flickrImages = ko.observableArray([]);
-//add animals to the list
-	self.animalList = ko.observableArray([]);
 
+	//save all animals in an obserable array, the list gets updated accordingly
+	self.animalList = ko.observableArray([]);
 	initialAnimals.forEach( function(animalItem) {
 		//add the google maps markers
 		for(var i = 0; i < animalItem.lng.length; i++) {
@@ -175,8 +226,7 @@ var ViewModel = function(map, overlay) {
 				} else {
 					//no more animation
 					marker.setAnimation(null);
-					//the infobubble get closed as well
-					self.infoBubble.close(self.map,marker);
+					mapObj.closeInfoBubble(marker);
 				}
 
 			});
@@ -188,15 +238,17 @@ var ViewModel = function(map, overlay) {
 	self.filteredItems = ko.computed(function() {
 		var search  = self.filteredAnimal().toLowerCase();
 
-		return  ko.utils.arrayFilter(self.animalList(), function (animal) {
+		var tmp=  ko.utils.arrayFilter(self.animalList(), function (animal) {
         	var show = animal.anName.toLowerCase().indexOf(search) >= 0;
         	animal.myMarkers.forEach(function(marker){
         		marker.setVisible(show);
         	});
         	return show;
     	});
-
+		return tmp;
 	});
+
+
 
 	// document.getElementById("listview").size = sizeVal;
 
@@ -214,7 +266,7 @@ var ViewModel = function(map, overlay) {
         	success: function ( response ) {
 				self.wikiLink('http://en.wikipedia.org/wiki/' + response[1][0]);
 				self.wikiParagraph( response[2][0]);
-				//only after success open the info bubble
+				//trigger the flickr Ajax, so the info bubble gets updated by both only once
 				self.flickrAjax(self.selectedAnimal().anName);
 
 
@@ -246,7 +298,6 @@ var ViewModel = function(map, overlay) {
 			} else {
 				//pick 15 random pictures from the original array;
 				for(var i = 0; i < 15; i++ ) {
-					console.log(data.photos.photo.length);
 					var index = Math.floor(Math.random() * data.photos.photo.length);
  					showArray.push(data.photos.photo[index]);
  					data.photos.photo.splice(index,1);
@@ -260,58 +311,30 @@ var ViewModel = function(map, overlay) {
        	 		photoItem.lat = photo.latitude;
        	 		self.flickrImages.push(photoItem);
        	 	});
-         self.openInfoBubble();
+         self.mapObject.openInfoBubble(self.selectedAnimal().myMarkers[0]);
 
     	}).error(function(e) {
     		console.log(e);
     	});
 	}
 
-	self.openInfoBubble = function() {
-		//only one infoBubble, even if more markers are present, so only the first marker
-		var marker = self.selectedAnimal().myMarkers[0];
-		var pixPosition = self.overlay.getProjection().fromLatLngToDivPixel(marker.getPosition());
-		var xPix = pixPosition.x;
-		var yPix = pixPosition.y;
-		var contentWidth = $("#infContent").width();
-		var contentHeight = $("#infContent").height();
-		if(xPix > window.innerWidth-contentWidth/2) {
-			//we are too close to the right edge
-			xPix = window.innerWidth - contentWidth/2 -20;
-		}
-		if(xPix < contentWidth/2) {
-			//too close to the left edge
-			xPix = contentWidth/2 + 20;
-		}
-
-		if(yPix < contentHeight) {
-			yPix = yPix+ contentHeight + 30;
-		} else {
-			yPix = yPix - 50;
-		}
-
-		var tmp = new google.maps.Point(xPix,yPix);
-
-		var lngLatPos = self.overlay.getProjection().fromDivPixelToLatLng(new google.maps.Point(xPix,yPix));
-		self.infoBubble.updateTab(0,INFOTABTITLE,$("#infContent").html());
-		self.infoBubble.updateTab(1,FLICKRTABTITLE,$("#flickrContent").html());
-		self.infoBubble.open(self.map);
-		//self.infoBubble().open(self.map,self.selectedAnimal().myMarkers[0]());
-		self.infoBubble.setPosition(lngLatPos);
-		self.infoBubble.setZIndex(2000);
-	};
-
 
 }
 
-
-
+function calculateListSize(){
+	//font: 15px
+	var font = 15+4;
+	var offset = 48;
+	var height = window.innerHeight;
+	var calc = Math.floor((height - offset)/font);
+	$("#listview").attr("size",calc);
+}
 //AIzaSyBvSyOJDU2J8YelkMVS4LGsuI0KVNGqu-I
 $(window).load(function() {
   var map = new Map();
   map.initialize();
-  ko.applyBindings(new ViewModel(map.getMap(), map.getOverlay()));
+  ko.applyBindings(new ViewModel(map));
   //testData();
-
-
+  //calculateListSize();
 });
+

@@ -9,10 +9,29 @@
 
 	</head>
 	<body>
+
+		<div id="container">
+			<div id="searchmenu">
+				<!-- value update keyup is needed, because the jquery-ui autocomplete messes up the change event -->
+				<input id="filter" data-bind="value: filteredAnimal, valueUpdate: 'keyup'" type="text" placeholder="Search Animal" >
+				<ul id="listview" data-bind="foreach: filteredItems">
+					<li >
+					<a  data-bind="text: anName, click: $parent.setSelectedAnimal"></a>
+					</li>
+	        	</ul>
+	        </div>
+
+			<div id="map">
+
+			</div>
+
+		</div>
+
+		<!--hidden content-->
 		<div id="infContent" data-bind="with: selectedAnimal" style="display:none">
 			<div id="infContainer">
-			<h3 data-bind="text: anName"></h3>
-			<p> Seen on: <span data-bind="text: dateSeen"></span></p>
+				<h3 data-bind="text: anName"></h3>
+				<p> Seen on: <span data-bind="text: dateSeen"></span></p>
 				<img id="infoImage" src="" data-bind="attr: {src: imgSrc}" alt="Animal image">
 				<div id="wikiCont" >
 					<a data-bind="attr: { href: $parent.wikiLink}, text:$parent.wikiLink"></a>
@@ -24,22 +43,11 @@
 		<div id="flickrContent"  style="display:none">
 			<h3> Related images on Flickr</h3>
 			<div id ="flickrContainer" data-bind="foreach: flickrImages">
-					<a data-bind="attr: {href: o_url}" target="_blank">
-						<img class="flickrImage" src="" data-bind="attr: {src: t_url}" alt="Flickr Thumbnail" >
-					</a>
+				<a data-bind="attr: {href: o_url}" target="_blank">
+					<img class="flickrImage" src="" data-bind="attr: {src: t_url}" alt="Flickr Thumbnail" >
+				</a>
 			</div>
 		</div>
-			<!-- value update keyup is needed, because the jquery-ui autocomplete messes up the change event -->
-			<input id="filter" data-bind="value: filteredAnimal, valueUpdate: 'keyup'" class="controls" type="text" placeholder="Search Animal" >
-		<div id="map">
-
-		</div>
-
-		<select id="listview" data-bind="options: filteredItems,
-                       optionsText: 'anName',
-                       value: selectedAnimal" >
-                       <option selected="selected">Find Animal...</option>
-        </select>
 
 		<script src="bower_components/jquery/dist/jquery.js"></script>
 		<script src="bower_components/jquery-ui/jquery-ui.min.js"></script>
