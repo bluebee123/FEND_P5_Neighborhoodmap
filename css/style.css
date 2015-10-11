@@ -68,5 +68,18 @@ html, body {
 }
 
 #wikiCont {
-	max-width: 200px;
+	max-width: 300px;
+}
+
+#flickrContainer {
+  max-width: 300px;
+  max-height: 200px;
+}
+
+.flickrImage {
+  margin: 2, 2, 2, 2;
+}
+
+._ibani_5177 {
+  z-index: 9999;
 }

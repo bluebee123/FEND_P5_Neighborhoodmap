@@ -20,6 +20,15 @@
 				</div>
 			</div>
 		</div>
+
+		<div id="flickrContent"  style="display:none">
+			<h3> Related images on Flickr</h3>
+			<div id ="flickrContainer" data-bind="foreach: flickrImages">
+					<a data-bind="attr: {href: o_url}" target="_blank">
+						<img class="flickrImage" src="" data-bind="attr: {src: t_url}" alt="Flickr Thumbnail" >
+					</a>
+			</div>
+		</div>
 			<!-- value update keyup is needed, because the jquery-ui autocomplete messes up the change event -->
 			<input id="filter" data-bind="value: filteredAnimal, valueUpdate: 'keyup'" class="controls" type="text" placeholder="Search Animal" >
 		<div id="map">
@@ -28,8 +37,9 @@
 
 		<select id="listview" data-bind="options: filteredItems,
                        optionsText: 'anName',
-                       value: selectedAnimal,
-                       attr: {size: listSize}" ></select>
+                       value: selectedAnimal" >
+                       <option selected="selected">Find Animal...</option>
+        </select>
 
 		<script src="bower_components/jquery/dist/jquery.js"></script>
 		<script src="bower_components/jquery-ui/jquery-ui.min.js"></script>
