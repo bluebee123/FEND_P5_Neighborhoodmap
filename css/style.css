@@ -76,7 +76,7 @@ display:block;
    }
 
 .activeElement {
-     background:#ddd;
+   background:#ddd;
    color:#808;
 }
 #infContainer {
@@ -84,7 +84,7 @@ display:block;
 	font-family: Roboto;
   	font-size: 12px;
   	display: block;
-
+  width: 250px;
 }
 
 
@@ -95,13 +95,7 @@ display:block;
 #wikiCont {
 	border: 1px solid;
 }
-#infoContent {
-	width: 400px;
-	margin-left: 15px;
-	margin-top: 30px;
 
-	border-radius: 20%;
-}
 
 #wikiCont {
 	max-width: 300px;

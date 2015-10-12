@@ -97,11 +97,13 @@ var Map = function() {
 		this.infoBubble = new InfoBubble({
 			disableAutoPan: true,
 			borderRadius: 0,
-			arrowSize: 0
+			arrowSize: 0,
+			disableAnimation: true
 
 		});
 		this.infoBubble.addTab(INFOTABTITLE, $("#infContent").html());
 		this.infoBubble.addTab(FLICKRTABTITLE, $("#flickrContent").html());
+		this.infoBubble.hideCloseButton();
 	};
 	this.openInfoBubble = function(marker) {
 		//only one infoBubble, even if more markers are present, so only the first marker
@@ -131,7 +133,6 @@ var Map = function() {
 		this.infoBubble.open(this.map);
 		//self.infoBubble().open(self.map,self.selectedAnimal().myMarkers[0]());
 		this.infoBubble.setPosition(lngLatPos);
-		this.infoBubble.setZIndex(2000);
 	};
 
 	this.updateIBContent = function(index, title, content) {
@@ -150,6 +151,28 @@ var Map = function() {
 		return this.overlay;
 	}
 
+	this.getMarker = function(alat, alng, name) {
+		var marker = new google.maps.Marker({
+ 				position: {lat: alat, lng: alng},
+             	map: this.map,
+				title: name,
+				animation: google.maps.Animation.DROP
+	    });
+		marker.active = ko.observable(false);
+		marker.active.subscribe(function() {
+
+			if(marker.active()) {
+				marker.setAnimation(google.maps.Animation.BOUNCE);
+
+			} else {
+			//no more animation
+				marker.setAnimation(null);
+
+			}
+
+		});
+		return marker;
+	};
 };
 
 
@@ -168,25 +191,31 @@ var ViewModel = function(mapObj) {
 	self.lastAnimal =null;
 	//subscribe to changes of selectedAnimal manually in order to update the google map markers
 	self.selectedAnimal.subscribe(function() {
-		//whenever the selected Animal changes, we fire the ajax
-		//Wikipedia
-		if(self.selectedAnimal()!==null){
-			var aniName = self.selectedAnimal().anName;
+$(".activeElement").toggleClass("activeElement");
+		if(self.selectedAnimal()===self.lastAnimal) {
+			//this means, the button or the marker has been clicked again, hence we close infoBubble and set to inactive
+			self.selectedAnimal(null);
+		} else {
+			if(self.selectedAnimal()!==null){
+				var aniName = self.selectedAnimal().anName;
 
+				//whenever the selected Animal changes, we fire the ajax
+				//Wikipedia
+				self.wikiAjax(aniName);
+				//Flickr
+				self.flickrAjax(aniName);
+				self.mapObject.openInfoBubble(self.selectedAnimal().myMarkers[0]);
 
-			self.wikiAjax(aniName);
-			self.flickrAjax(aniName);
-			self.mapObject.openInfoBubble(self.selectedAnimal().myMarkers[0]);
-
-			//TODO: only set content of bubble, not draw whole bubble?!
-			//remove the class activeElement from current ones
-			var element = $( "a:contains(" + aniName + ")" );
-			element.toggleClass("activeElement");
-			self.selectedAnimal().myMarkers.forEach(function(marker) {
-				marker.active(true);
-			});
+				//TODO: only set content of bubble, not draw whole bubble?!
+				//remove the class activeElement from current ones
+				var element = $( "a:contains(" + aniName + ")" );
+				element.toggleClass('activeElement');
+				self.selectedAnimal().myMarkers.forEach(function(marker) {
+					marker.active(true);
+				});
+			}
 		}
-		$(".activeElement").toggleClass("activeElement");
+
 		self.mapObject.resetflickrMarkers();
 
 
@@ -198,6 +227,7 @@ var ViewModel = function(mapObj) {
 		} else {
 			//all markers of last animal need to be deactivated
 			self.lastAnimal.myMarkers.forEach(function(marker) {
+				self.mapObject.closeInfoBubble();
 				marker.active(false);
 			})
 			self.lastAnimal=self.selectedAnimal();
@@ -223,14 +253,7 @@ var ViewModel = function(mapObj) {
 		for(var i = 0; i < animalItem.lng.length; i++) {
 			var alat = animalItem.lat[i];
 			var alng = animalItem.lng[i];
-			var marker = new google.maps.Marker({
- 				position: {lat: alat, lng: alng},
-             	map: self.map,
-				name: animalItem.anName,
-				animation: google.maps.Animation.DROP
-	         });
-			marker.active = ko.observable(false);
-			marker.id = i + "-" + marker.name;
+			var marker = self.mapObject.getMarker(alat,alng,animalItem.anName);
 			//add click listeners to the markers, setting the current selected Animal.
 			marker.addListener('click', (function(animal) {
     			return function() {
@@ -242,18 +265,7 @@ var ViewModel = function(mapObj) {
 		}
 		//add active subscriptions to each marker, which will toggle animation and close infoBubbles if active(false)
 		animalItem.myMarkers.forEach( function(marker) {
-			marker.active.subscribe(function() {
 
-				if(marker.active()) {
-					marker.setAnimation(google.maps.Animation.BOUNCE);
-
-				} else {
-					//no more animation
-					marker.setAnimation(null);
-					mapObj.closeInfoBubble(marker);
-				}
-
-			});
 		});
 		self.animalList().push(animalItem);
 	});
@@ -306,7 +318,9 @@ var ViewModel = function(mapObj) {
 		flickrURL+="&tags=" + query;
 
 		//search only for pics in the area of my map!
-		flickrURL+="&bbox=142,-39,146,-36";
+		//-39.035283, 140.740863
+		//-36.526291, 147.019550
+		flickrURL+="&bbox=140.740,-39.035,147.019,-36.526";
 		//get the URL to the image thumbnail and original as well, and the geo information
 		flickrURL+="&extras=url_t,url_o,geo";
 		flickrURL+="&format=json";
