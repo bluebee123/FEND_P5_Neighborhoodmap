@@ -11,52 +11,54 @@
 	<body>
 
 		<div id="container">
+
+
+			<div id="map">
+
+			</div>
 			<div id="searchmenu">
-				<!-- value update keyup is needed, because the jquery-ui autocomplete messes up the change event -->
-				<input id="filter" data-bind="value: filteredAnimal, valueUpdate: 'keyup'" type="text" placeholder="Search Animal" >
+				<div id="filterdiv">
+				<input id="filter" data-bind="textInput: filteredAnimal" type="text" placeholder="Search Animal" >
 
 				<ul id="listview" data-bind="foreach: filteredItems">
 					<li >
 					<a  data-bind="text: anName, click: $parent.setSelectedAnimal"></a>
 					</li>
 	        	</ul>
-	        	<p id="infotext"> Purple paws show places where other people on Flickr spotted the animal or something related to it! </p>
-	        </div>
+	        	</div>
+	        <!--	<p id="infotext"> Purple paws show places where other people on Flickr spotted the animal or something related to it! </p>-->
+	        	<div id="infoWindow" data-bind="visible: showInfo">
+					<div id="tabs">
+						<ul>
+				    	<li><a href="#tab-1"><span>Pic and Info</span></a></li>
+				   		<li><a href="#tab-2"><span>Flickr Images</span></a></li>
+				  		</ul>
+					<!--hidden content-->
+						<div id="tab-1" data-bind="with: selectedAnimal" >
+							<div id="infContainer">
+								<h3 data-bind="text: anName"></h3>
+								<p> Seen on: <span data-bind="text: dateSeen"></span></p>
+								<img id="infoImage" src="" data-bind="attr: {src: imgSrc}" alt="Animal image">
+								<div id="wikiCont" >
+									<a data-bind="attr: { href: $parent.wikiLink}, text:$parent.wikiLink"></a>
+									<p data-bind="text: $parent.wikiParagraph"></p>
+								</div>
+							</div>
+						</div>
 
-			<div id="map">
-
-			</div>
-
-		</div>
-		<div id="infoWindow" style="display:none">
-			<div id="tabs">
-				<ul>
-		    	<li><a href="#tab-1"><span>Pic and Info</span></a></li>
-		   		<li><a href="#tab-2"><span>Flickr Images</span></a></li>
-		  		</ul>
-			<!--hidden content-->
-				<div id="tab-1" data-bind="with: selectedAnimal" >
-					<div id="infContainer">
-						<h3 data-bind="text: anName"></h3>
-						<p> Seen on: <span data-bind="text: dateSeen"></span></p>
-						<img id="infoImage" src="" data-bind="attr: {src: imgSrc}" alt="Animal image">
-						<div id="wikiCont" >
-							<a data-bind="attr: { href: $parent.wikiLink}, text:$parent.wikiLink"></a>
-							<p data-bind="text: $parent.wikiParagraph"></p>
+						<div id="tab-2">
+							<h3> Related images on Flickr</h3>
+							<div id ="flickrContainer" data-bind="foreach: flickrImages">
+								<a data-bind="attr: {href: o_url}" target="_blank">
+									<img class="flickrImage" src="" data-bind="attr: {src: t_url}" alt="Flickr Thumbnail" >
+								</a>
+							</div>
 						</div>
 					</div>
 				</div>
-
-				<div id="tab-2">
-					<h3> Related images on Flickr</h3>
-					<div id ="flickrContainer" data-bind="foreach: flickrImages">
-						<a data-bind="attr: {href: o_url}" target="_blank">
-							<img class="flickrImage" src="" data-bind="attr: {src: t_url}" alt="Flickr Thumbnail" >
-						</a>
-					</div>
-				</div>
-			</div>
+	        </div>
 		</div>
+
 		<script src="bower_components/jquery/dist/jquery.min.js"></script>
 		<script src="bower_components/jquery-ui/jquery-ui.min.js"></script>
 		<script src="bower_components/knockout/dist/knockout.js"></script>

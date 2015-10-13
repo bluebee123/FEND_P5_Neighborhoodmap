@@ -54,36 +54,39 @@ var initialAnimals=[
 
 //initializes and offers methods relating to anything concerning the google map.
 var Map = function() {
-
+	var self = this;
 	this.initialize = function() {
 	  // Create a map object and specify the DOM element for display.
-	    this.map = new google.maps.Map(document.getElementById('map'), {
-	    	center: {lat: -37.8180, lng: 143.9760},
+	    self.map = new google.maps.Map(document.getElementById('map'), {
+	    	center: {lat: -37.9180, lng: 143.9760},
 	    	zoom: 8,
 	    	mapTypeControl: false,
-	    	draggable: false,
-	    	panControl: false,
-	    	scrollwheel: false
+		   	scrollwheel: false,
+		   	zoomControl: false,
+	    	streetViewControl: false
 		});
-	    this.overlay = new google.maps.OverlayView();
-	    this.overlay.draw = function() {};
-    	this.overlay.setMap(this.map);
+	    self.overlay = new google.maps.OverlayView();
+	    self.overlay.draw = function() {};
+    	self.overlay.setMap(this.map);
 
 
+    	/* var infWin = document.getElementById("infoWindow");
 
-	};
+  		infWin.index = 1;
+  		this.map.controls[google.maps.ControlPosition.TOP_LEFT].push(infWin);*/
 
+  		};
 
-	this.flickrMarkers = [];
+	self.flickrMarkers = [];
 
-	this.resetflickrMarkers = function() {
-		this.flickrMarkers.forEach(function(marker) {
+	self.resetflickrMarkers = function() {
+		self.flickrMarkers.forEach(function(marker) {
 			marker.setVisible(false);
 		})
-		this.flickerMarkers = [];
+		self.flickerMarkers = [];
 	}
 
-	this.addFlickrMarker = function(lon, lat, name) {
+	self.addFlickrMarker = function(lon, lat, name) {
 
 		var marker = new google.maps.Marker({
  				position: {lat: lat, lng: lon},
@@ -92,18 +95,18 @@ var Map = function() {
 				icon: "img/zoo.png"
 	         });
 
-		this.flickrMarkers.push(marker);
+		self.flickrMarkers.push(marker);
 	}
 
-	this.getMap = function() {
+	self.getMap = function() {
 		return this.map;
 	}
 
-	this.getOverlay = function() {
+	self.getOverlay = function() {
 		return this.overlay;
 	}
 
-	this.getMarker = function(animal) {
+	self.getMarker = function(animal) {
 		var marker = new google.maps.Marker({
  				position: {lat: animal.lat, lng: animal.lng},
              	map: this.map,
@@ -125,11 +128,19 @@ var Map = function() {
 
 		return marker;
 	};
+
+	self.setibm = function(ibm){
+		this.ibm = ibm;
+	}
+
+	self.printNode = function() {
+		console.log($node[0]);
+	};
 };
 
 var InfoboxModel = function(mapobject) {
 	var self = this;
-		self.mapObject = mapobject;
+	self.mapObject = mapobject;
 	self.map = mapobject.getMap(); //save the actual google map
 
 
@@ -141,45 +152,11 @@ var InfoboxModel = function(mapobject) {
 
 
 	self.showInfo = ko.computed(function() {
-		if(self.ajaxDone() && self.selectedAnimal()!== null) {
-			console.log("setting content...");
-			self.infowindow.setContent($("#infoWindow").html());
-			self.infowindow.open(self.map,self.selectedAnimal().myMarkers[0]);
-			  $("#tabs").tabs({
-			  		active:0
-			  });
-		}
 		return true;
-	})
-
-	self.infowindow = new google.maps.InfoWindow({
-        	content: $("#infoWindow").html(),
-        	disableAutoPan: true,
-        	maxwidth: 300
-    });
-
-    google.maps.event.addListener(self.infowindow, 'domready', function() {
-
-   // Reference to the DIV which receives the contents of the infowindow using jQuery
-   var iwOuter = $('.gm-style-iw');
-
-   /* The DIV we want to change is above the .gm-style-iw DIV.
-    * So, we use jQuery and create a iwBackground variable,
-    * and took advantage of the existing reference to .gm-style-iw for the previous DIV with .prev().
-    */
-   var iwBackground = iwOuter.prev();
-   // Remove the background shadow DIV
-   iwBackground.children(':nth-child(2)').css({'display' : 'none'});
-   // Remove the white background DIV
-   iwBackground.children(':nth-child(4)').css({'display' : 'none'});
-
-   var test = iwOuter.children(':nth-child(1)').css({'width' : '100%'});
-	var iwCloseBtn = iwOuter.next();
-
-	iwCloseBtn.css({'display': 'none'});
-
-
+		//return self.ajaxDone() && self.selectedAnimal()!== null;
 	});
+
+
 	//Wikipedia data which is bound to a display:none div which is the content of the infoBubble
 	self.selectedAnimal = ko.observable(null);
 	self.lastAnimal =null;
@@ -192,6 +169,7 @@ var InfoboxModel = function(mapobject) {
 			self.selectedAnimal(null);
 		} else {
 			if(self.selectedAnimal()!==null){
+
 				var aniName = self.selectedAnimal().anName;
 
 				//whenever the selected Animal changes, we fire the ajax
@@ -200,8 +178,6 @@ var InfoboxModel = function(mapobject) {
 				//Flickr
 				self.flickrAjax(aniName);
 				//self.mapObject.openInfoBubble(self.selectedAnimal().myMarkers[0]);
-
-				//TODO: only set content of bubble, not draw whole bubble?!
 				//remove the class activeElement from current ones
 				var element = $( "a:contains(" + aniName + ")" );
 				element.toggleClass('activeElement');
@@ -211,7 +187,7 @@ var InfoboxModel = function(mapobject) {
 			}
 		}
 
-		//self.mapObject.resetflickrMarkers();
+		self.mapObject.resetflickrMarkers();
 
 
 		//all the markers of this animal are set to active
@@ -222,7 +198,6 @@ var InfoboxModel = function(mapobject) {
 		} else {
 			//all markers of last animal need to be deactivated
 			self.lastAnimal.myMarkers.forEach(function(marker) {
-				self.infowindow.close();
 				marker.active(false);
 			})
 			self.lastAnimal=self.selectedAnimal();
@@ -321,7 +296,9 @@ var ViewModel = function(map) {
 	self.mapObject = map;
 	self.filteredAnimal=ko.observable("");
 
-
+	self.filteredAnimal.subscribe( function() {
+		self.setSelectedAnimal(null);
+	})
 
 	//save all animals in an obserable array, the list gets updated accordingly
 	self.animalList = ko.observableArray([]);
@@ -329,8 +306,6 @@ var ViewModel = function(map) {
 		//add the google maps markers
 			var marker = self.mapObject.getMarker(animalItem);
 			marker.addListener('click', function() {
-
-				console.log(marker.animal);
 				self.ibm.setSelectedAnimal(marker.animal);
 			});
 			animalItem.myMarkers.push(marker);
@@ -370,14 +345,7 @@ var ViewModel = function(map) {
 
 }
 
-function calculateListSize(){
-	//font: 15px
-	var font = 15+4;
-	var offset = 48;
-	var height = window.innerHeight;
-	var calc = Math.floor((height - offset)/font);
-	$("#listview").attr("size",calc);
-}
+
 //AIzaSyBvSyOJDU2J8YelkMVS4LGsuI0KVNGqu-I
 $(window).load(function() {
   var map = new Map();
@@ -386,10 +354,41 @@ $(window).load(function() {
 
   var ibm = new InfoboxModel(map);
   vm.setibm(ibm);
-   ko.applyBindings(vm,$("#searchmenu")[0]);
+  map.setibm(ibm);
+   ko.applyBindings(vm,$("#filterdiv")[0]);
   ko.applyBindings(ibm, $("#infoWindow")[0]);
-
+$("#tabs").tabs({
+			  active:0
+		});
   //testData();
   //calculateListSize();
 });
 
+
+
+/*
+.ui-widget-content {
+  border: 0;
+}
+.ui-tabs .ui-tabs-nav li {
+    width:45%;
+}
+
+
+#tabs {
+  width: 300px;
+  height:300px;
+}
+#tabs-nobg {
+    padding: 0px;
+}
+#tabs-nobg .ui-tabs-nav {
+    background: transparent;
+}
+#tabs-nobg .ui-tabs-panel {
+    margin: 0em 0.2em 0.2em 0.2em;
+}
+*/
+
+//TODO: Flickr paws müssen weg bei neuem animal
+// wenn in die searchbox eingegeben wird: infopanel schließen
