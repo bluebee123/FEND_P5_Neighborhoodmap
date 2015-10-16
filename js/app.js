@@ -1,9 +1,12 @@
 var INFOTABTITLE = "Pic and Info";
 var FLICKRTABTITLE = "Flickr Images";
+
+//some initial Animal data, hard coded
 var initialAnimals=[
 	{
 		anName: "Southern Right Whale",
-		imgSrc: "http://www.australiananimallearningzone.com/wp-content/uploads/2012/09/Southern-Right-Whale-Pictures-300x272.jpg",
+		imgSrc: "img/whale.jpg",
+		title: "My horrible pic of a whale",
 		lat: -38.428914,
 		lng: 142.521175,
 		dateSeen: "02.09.2015",
@@ -12,6 +15,7 @@ var initialAnimals=[
 	{
 		anName: "Wallaby",
 		imgSrc: "img/kang.jpg",
+		title: "Feeding the Wallaby",
 		lat: -38.698435,
 		lng: 143.229360,
 		dateSeen: "02.09.2015",
@@ -20,6 +24,7 @@ var initialAnimals=[
 	{
 		anName: "Echidna",
 		imgSrc: "img/echidna.jpg",
+		title: "Lucky find while hiking",
 		lat:-37.181397,
 		lng: 145.861132,
 		dateSeen: "02.10.2015",
@@ -28,6 +33,7 @@ var initialAnimals=[
 	{
 		anName: "Little Penguin",
 		imgSrc: "img/littlePenguin.jpg",
+		title: "© Penguin Parade, http://www.penguins.org.au",
 		lat: -38.514876,
 		lng: 145.144377,
 		dateSeen: "16.09.2015",
@@ -36,6 +42,7 @@ var initialAnimals=[
 	{
 		anName: "Possum",
 		imgSrc: "img/possum.jpg",
+		title: "Possum in a tree",
 		lat: -37.930777,
 		lng: 145.111319,
 		dateSeen: "20.08.2015",
@@ -44,13 +51,14 @@ var initialAnimals=[
 	{
 		anName: "Koala",
 		imgSrc: "img/koala.jpg",
+		title: "Koala by the road",
 		lat: -38.805814,
 		lng: 143.535075,
 		dateSeen: "02.09.2015",
 		myMarkers: []
 	}
 
-]
+];
 
 //initializes and offers methods relating to anything concerning the google map.
 var Map = function() {
@@ -61,31 +69,25 @@ var Map = function() {
 	    	center: {lat: -37.9180, lng: 143.9760},
 	    	zoom: 8,
 	    	mapTypeControl: false,
-		   	scrollwheel: false,
-		   	zoomControl: false,
 	    	streetViewControl: false
 		});
-	    self.overlay = new google.maps.OverlayView();
-	    self.overlay.draw = function() {};
-    	self.overlay.setMap(this.map);
+	    self.flickrMarkers = [];
+  	};
 
+  	//centers the map on a marker
+  	self.panToMarker = function(marker){
+  		self.map.panTo(marker.position);
+  	};
+  	//flickrMarkers are markers at positions where other people took a photo of an animal
 
-    	/* var infWin = document.getElementById("infoWindow");
-
-  		infWin.index = 1;
-  		this.map.controls[google.maps.ControlPosition.TOP_LEFT].push(infWin);*/
-
-  		};
-
-	self.flickrMarkers = [];
-
+	//removes all flickr MArkers
 	self.resetflickrMarkers = function() {
 		self.flickrMarkers.forEach(function(marker) {
 			marker.setVisible(false);
-		})
+		});
 		self.flickerMarkers = [];
-	}
-
+	};
+	//adds a flickr Marker at the given lon, lat with the name as title.
 	self.addFlickrMarker = function(lon, lat, name) {
 
 		var marker = new google.maps.Marker({
@@ -94,18 +96,15 @@ var Map = function() {
 				title: name,
 				icon: "img/zoo.png"
 	         });
-
 		self.flickrMarkers.push(marker);
-	}
+	};
+
 
 	self.getMap = function() {
 		return this.map;
-	}
+	};
 
-	self.getOverlay = function() {
-		return this.overlay;
-	}
-
+	//returns a new marker
 	self.getMarker = function(animal) {
 		var marker = new google.maps.Marker({
  				position: {lat: animal.lat, lng: animal.lng},
@@ -113,8 +112,10 @@ var Map = function() {
 				title: animal.anName,
 				animation: google.maps.Animation.DROP
 	    });
+
+	    marker.animal = animal;
+	    //when the active parameter changes, the animation is set accordingly.
 		marker.active = ko.observable(false);
-		marker.animal = animal;
 		marker.active.subscribe(function() {
 			if(marker.active()) {
 				marker.setAnimation(google.maps.Animation.BOUNCE);
@@ -125,45 +126,35 @@ var Map = function() {
 
 			}
 		});
-
+		//simple infoWindow with the title as content
+		marker.infowindow = new google.maps.InfoWindow({
+  			content: marker.animal.title
+  		});
+		//which gets open when the marker is clicked.
+	   google.maps.event.addListener(marker, 'click', function() {
+	   	if(!marker.active()){
+  			marker.infowindow.open(this.map,marker);
+  		}
+  		});
 		return marker;
 	};
 
-	self.setibm = function(ibm){
-		this.ibm = ibm;
-	}
 
-	self.printNode = function() {
-		console.log($node[0]);
-	};
 };
-
+//The Infoboxmodel deals with the info displayed on the page, which contains the information retrieved
+//from the ajax calls, as well as more information on the marker clicked.
 var InfoboxModel = function(mapobject) {
 	var self = this;
 	self.mapObject = mapobject;
 	self.map = mapobject.getMap(); //save the actual google map
 
-
-	self.flickrDone = ko.observable(false);
-	self.wikiDone = ko.observable(false);
-	self.ajaxDone = ko.computed( function() {
-		return self.wikiDone() && self.flickrDone();
-	})
-
-
-	self.showInfo = ko.computed(function() {
-		return true;
-		//return self.ajaxDone() && self.selectedAnimal()!== null;
-	});
-
-
-	//Wikipedia data which is bound to a display:none div which is the content of the infoBubble
 	self.selectedAnimal = ko.observable(null);
 	self.lastAnimal =null;
-	//subscribe to changes of selectedAnimal manually in order to update the google map markers
-	self.selectedAnimal.subscribe(function() {
+	/*subscribe to changes of selectedAnimal manually in order to update the google map markers, fire ajax when the
+	selected animal has changed, pan to the marker belonging to the animal.
 
-		$(".activeElement").toggleClass("activeElement");
+	*/
+	self.selectedAnimal.subscribe(function() {
 		if(self.selectedAnimal()===self.lastAnimal) {
 			//this means, the button or the marker has been clicked again, hence we close infoBubble and set to inactive
 			self.selectedAnimal(null);
@@ -178,44 +169,47 @@ var InfoboxModel = function(mapobject) {
 				//Flickr
 				self.flickrAjax(aniName);
 				//self.mapObject.openInfoBubble(self.selectedAnimal().myMarkers[0]);
-				//remove the class activeElement from current ones
-				var element = $( "a:contains(" + aniName + ")" );
-				element.toggleClass('activeElement');
+
+				self.mapObject.panToMarker(self.selectedAnimal().myMarkers[0]);
 				self.selectedAnimal().myMarkers.forEach(function(marker) {
 					marker.active(true);
 				});
 			}
 		}
-
+		//remove old flickrMarkers
 		self.mapObject.resetflickrMarkers();
+		self.flickrImages([]);
 
-
-		//all the markers of this animal are set to active
-
+		//save this animal even on change, ...
 		if(self.lastAnimal===null) {
 			self.lastAnimal=self.selectedAnimal();
 
 		} else {
-			//all markers of last animal need to be deactivated
+			//... becauseall markers of last animal need to be deactivated
 			self.lastAnimal.myMarkers.forEach(function(marker) {
 				marker.active(false);
-			})
+			});
 			self.lastAnimal=self.selectedAnimal();
 		}
 	});
 
-	self.clearSelection = function() {
+	/*self.clearSelection = function() {
 		self.selectedAnimal(null);
-	}
+	};*/
+	//this needs to be called fromm the marker as well as the filter list
 	self.setSelectedAnimal = function(data) {
 		self.selectedAnimal(data);
-	}
+	};
+	self.getSelectedAnimal = function() {
+		return self.selectedAnimal();
+	};
 
 
+//the ajax calls, whose results are directly pumped into ko observables
     self.wikiLink = ko.observable("");
 	self.wikiParagraph = ko.observable("");
     self.wikiAjax = function(query) {
-    	self.wikiDone(false);
+    	self.wikiParagraph( "Please wait while info is being loaded");
 		var wikiURL = 'http://en.wikipedia.org/w/api.php?action=opensearch&search='+query+
     	'&format=json&callback=wikiCallback';
 
@@ -225,7 +219,9 @@ var InfoboxModel = function(mapobject) {
         	success: function ( response ) {
 				self.wikiLink('http://en.wikipedia.org/wiki/' + response[1][0]);
 				self.wikiParagraph( response[2][0]);
-				self.wikiDone(true);
+        	},
+        	error: function (e) {
+        		self.wikiParagraph("There has been an error retrieving data from Wikipedia. Sorry about that!");
         	}
    		 });
 	};
@@ -233,10 +229,11 @@ var InfoboxModel = function(mapobject) {
 
 	//flickrImage data gets saved in an array. bound to a hidden div, which becomes part of Infobubble
 	self.flickrImages = ko.observableArray([]);
+	self.flickrMessage = ko.observable("");
 	self.flickrAjax = function(query) {
 		// key b6c9f7719ed5609ad7c941035ef290f9
 		//secret  56a751a4c0def0eeio
-		self.flickrDone(false);
+		self.flickrMessage("Please wait while content is being loaded");
 		var flickrURL = 'https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=b6c9f7719ed5609ad7c941035ef290f9';
 
 		flickrURL += "&content_type=1";
@@ -270,25 +267,23 @@ var InfoboxModel = function(mapobject) {
 			}
 
 			var helperArray = [];
-       	 	for(var i = 0; i < showArray.length; i++) {
+       	 	for(var j = 0; j < showArray.length; j++) {
        	 		var photoItem = {};
-       	 		photoItem.title = showArray[i].title;
-       	 		photoItem.o_url = showArray[i].url_o;
-       	 		photoItem.t_url = showArray[i].url_t;
-       	 		helperArray[i]=photoItem;
+       	 		photoItem.title = showArray[j].title;
+       	 		photoItem.o_url = showArray[j].url_o;
+       	 		photoItem.t_url = showArray[j].url_t;
+       	 		helperArray[j]=photoItem;
        	 	}
 
        	 	self.flickrImages(helperArray);
-
-       	 	self.flickrDone(true);
-
+       	 	self.flickrMessage("");
     	}).error(function(e) {
-    		console.log(e);
+    		self.flickrMessage("There has been an error retrieving data from Flickr. Sorry about that!");
     	});
-	}
-}
+	};
+};
 
-// ko Viewmodel
+// ko Viewmodel, this one deals with the searchmenu and filter list
 var ViewModel = function(map) {
 
 
@@ -296,19 +291,21 @@ var ViewModel = function(map) {
 	self.mapObject = map;
 	self.filteredAnimal=ko.observable("");
 
-	self.filteredAnimal.subscribe( function() {
+	/*self.filteredAnimal.subscribe( function() {
 		self.setSelectedAnimal(null);
-	})
+	})*/
 
 	//save all animals in an obserable array, the list gets updated accordingly
 	self.animalList = ko.observableArray([]);
 	initialAnimals.forEach( function(animalItem) {
 		//add the google maps markers
-			var marker = self.mapObject.getMarker(animalItem);
-			marker.addListener('click', function() {
-				self.ibm.setSelectedAnimal(marker.animal);
-			});
-			animalItem.myMarkers.push(marker);
+		var marker = self.mapObject.getMarker(animalItem);
+		//the listener is added here, because ViewModel knows the infoboxmodel, while map does not
+		marker.addListener('click', function() {
+			self.ibm.setSelectedAnimal(marker.animal);
+		});
+		//also, I wanted to have everything togethere, therefore the marker is saved in the animalitem. ibm can then handle active of the marker.
+		animalItem.myMarkers.push(marker);
 		//add active subscriptions to each marker, which will toggle animation and close infoBubbles if active(false)
 		self.animalList().push(animalItem);
 	});
@@ -316,79 +313,107 @@ var ViewModel = function(map) {
 //the list shows only the entrys matching the content of the search box
 	self.filteredItems = ko.computed(function() {
 		var search  = self.filteredAnimal().toLowerCase();
-
-		var tmp=  ko.utils.arrayFilter(self.animalList(), function (animal) {
+		//arrayFilter just compares the list with the given string
+		return   ko.utils.arrayFilter(self.animalList(), function (animal) {
         	var show = animal.anName.toLowerCase().indexOf(search) >= 0;
         	animal.myMarkers.forEach(function(marker){
         		marker.setVisible(show);
+        		if(!show) {
+        			marker.infowindow.close();
+        		}
         	});
         	return show;
     	});
-		return tmp;
+
 	});
 
 	self.setibm = function(ibm){
 		self.ibm=ibm;
-	}
+	};
 
 	self.setSelectedAnimal = function(data){
+		if(window.innerWidth < 400) {
+			self.showFilterList(false);
+		}
 		self.ibm.setSelectedAnimal(data);
 	};
-	// document.getElementById("listview").size = sizeVal;
 
-//on selecting an animal, the infowindow is displayed and the markers set to bouncing. the last selected animal
-//is recorded in order to unbounce their markers.
+	self.getSelectedElement = function() {
+		return self.ibm.getSelectedAnimal();
 
-//helper function which is called when clicking on a marker which are not bound to knockout.
-
+	};
 
 
-}
+		self.showFilterList = ko.observable(true);
+		self.searchmenuVisible = ko.observable(true);
+
+		//here, some more or leess rather ugly queries must be made in order to set the variables according to the
+		//media querys which handle css on different devices.
+		self.setVisibilities = function() {
+			self.showFilterList(true);
+			self.searchmenuVisible(true);
+			if(window.innerWidth < 400 ) {
+				self.showFilterList(false);
+			}
+			//workaround to see if landscape on a small screen...
+			if(window.innerWidth > window.innerHeight && window.innerHeight < 400) {
+				self.searchmenuVisible(false);
+			}
+		};
+
+		self.setVisibilities();
+		self.showList = function() {
+			if(window.innerWidth < 400 ) {
+				self.showFilterList(!self.showFilterList());
+			}
+		};
+
+		self.landscapetoggle = function() {
+			self.searchmenuVisible(!self.searchmenuVisible());
+
+		};
+		//on each resize, the visibilites need to be set new, so the knockout bindings get updated correctly, and it is
+		//in synch with the css media queries.
+		$(window).resize(function(){
+    		self.setVisibilities();
+		});
+};
 
 
-//AIzaSyBvSyOJDU2J8YelkMVS4LGsuI0KVNGqu-I
+
 $(window).load(function() {
   var map = new Map();
   map.initialize();
+
+
   var vm = new ViewModel(map);
 
   var ibm = new InfoboxModel(map);
   vm.setibm(ibm);
-  map.setibm(ibm);
-   ko.applyBindings(vm,$("#filterdiv")[0]);
-  ko.applyBindings(ibm, $("#infoWindow")[0]);
-$("#tabs").tabs({
+
+  //here, a section of the html is excluded from binding, this was necessary because otherwise i couldn't divide it into two
+  //parts due to the structure, see html
+  ko.bindingHandlers.stopBinding = {
+    init: function() {
+        return { controlsDescendantBindings: true };
+    }
+  };
+
+  ko.applyBindings(vm); //whole doc except when data-bind stopBinding is found , its descendants are ignored
+  ko.applyBindings(ibm, $("#tabs")[0]); //only #tabs and its descendants which is a descendant of the element with stopBinding
+
+  //only call this once, so jquerys tabs are displayed nicely.
+	$("#tabs").tabs({
 			  active:0
-		});
-  //testData();
-  //calculateListSize();
+	});
+
+
 });
 
 
-
 /*
-.ui-widget-content {
-  border: 0;
-}
-.ui-tabs .ui-tabs-nav li {
-    width:45%;
-}
 
+comments
+readme file
 
-#tabs {
-  width: 300px;
-  height:300px;
-}
-#tabs-nobg {
-    padding: 0px;
-}
-#tabs-nobg .ui-tabs-nav {
-    background: transparent;
-}
-#tabs-nobg .ui-tabs-panel {
-    margin: 0em 0.2em 0.2em 0.2em;
-}
 */
-
-//TODO: Flickr paws müssen weg bei neuem animal
-// wenn in die searchbox eingegeben wird: infopanel schließen

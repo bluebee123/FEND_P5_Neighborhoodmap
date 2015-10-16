@@ -4,6 +4,7 @@
 		<title>Australian Wildlife Sightings</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="initial-scale=1.0">
+		<meta name="viewport" content="width=device-width">
 		<link rel="stylesheet" href="bower_components/jquery-ui/themes/smoothness/jquery-ui.min.css">
 		<link rel="stylesheet" href="css/style.css">
 
@@ -16,18 +17,24 @@
 			<div id="map">
 
 			</div>
-			<div id="searchmenu">
-				<div id="filterdiv">
-				<input id="filter" data-bind="textInput: filteredAnimal" type="text" placeholder="Search Animal" >
+			<!-- class is toggled bysed on observable-->
+			<button id="searchmenuVisibleBtn" data-bind="click: landscapetoggle, css:{activeElement: searchmenuVisible, inactiveElement: !searchmenuVisible()}"><span id="buttonSpan"> Show/Hide Menu </span></button>
+			<div id="searchmenu" data-bind="visible: searchmenuVisible">
+				<div id="listviewdiv">
+					<button id="openlistBtn" data-bind="click: showList, css:{activeElement: showFilterList, inactiveElement: !showFilterList()}"><span id="buttonSpan"> Browse Animals </span></button>
+					<div id="filterdiv" data-bind="visible:showFilterList">
+						<input id="filter" data-bind="textInput: filteredAnimal" type="text" placeholder="Search Animal">
+						<ul id="listview" data-bind="foreach: filteredItems">
+							<li >
+								<a  data-bind="text: anName, click: $parent.setSelectedAnimal, css:{activeElement: $data === $parent.getSelectedElement(), inactiveElement: $data!==$parent.getSelectedElement()}"></a>
+							</li>
+		        		</ul>
+					</div>
 
-				<ul id="listview" data-bind="foreach: filteredItems">
-					<li >
-					<a  data-bind="text: anName, click: $parent.setSelectedAnimal"></a>
-					</li>
-	        	</ul>
 	        	</div>
+
 	        <!--	<p id="infotext"> Purple paws show places where other people on Flickr spotted the animal or something related to it! </p>-->
-	        	<div id="infoWindow" data-bind="visible: showInfo">
+	        	<div id="infoWindow" data-bind="stopBinding:true">
 					<div id="tabs">
 						<ul>
 				    	<li><a href="#tab-1"><span>Pic and Info</span></a></li>
@@ -36,9 +43,14 @@
 					<!--hidden content-->
 						<div id="tab-1" data-bind="with: selectedAnimal" >
 							<div id="infContainer">
-								<h3 data-bind="text: anName"></h3>
-								<p> Seen on: <span data-bind="text: dateSeen"></span></p>
+								<div id="nameDate">
+									<h3 data-bind="text: anName"></h3>
+									<p> Seen on: <span data-bind="text: dateSeen"></span></p>
+									<p data-bind="text: title"></p>
+								</div>
+
 								<img id="infoImage" src="" data-bind="attr: {src: imgSrc}" alt="Animal image">
+
 								<div id="wikiCont" >
 									<a data-bind="attr: { href: $parent.wikiLink}, text:$parent.wikiLink"></a>
 									<p data-bind="text: $parent.wikiParagraph"></p>
@@ -48,10 +60,12 @@
 
 						<div id="tab-2">
 							<h3> Related images on Flickr</h3>
+							<span data-bind="text: flickrMessage"></span>
 							<div id ="flickrContainer" data-bind="foreach: flickrImages">
 								<a data-bind="attr: {href: o_url}" target="_blank">
 									<img class="flickrImage" src="" data-bind="attr: {src: t_url}" alt="Flickr Thumbnail" >
 								</a>
+
 							</div>
 						</div>
 					</div>
