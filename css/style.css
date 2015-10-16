@@ -272,9 +272,6 @@ html, body {
  }
 }
 
-/* media: bei 630 px breite untere zeile nebeneinander
-/* Media queries to handle various device widths */
-
 @media only screen and (min-width: 630px) {
  #infContainer {
   display: flex;
@@ -286,7 +283,6 @@ html, body {
   margin-right: 5px;
   margin-left: 5px;
  }
-
 }
 
 @media only screen and (max-height: 400px) and (orientation: landscape) {
@@ -385,4 +381,3 @@ html, body {
   height: 40em;
  }
 };
-

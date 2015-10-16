@@ -381,7 +381,7 @@ var ViewModel = function(map) {
 
 
 
-$(window).load(function() {
+function initialize() {
   var map = new Map();
   map.initialize();
 
@@ -408,7 +408,7 @@ $(window).load(function() {
 	});
 
 
-});
+}
 
 
 /*
