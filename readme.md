@@ -8,3 +8,11 @@ How to run the app
 
 Don't change the folder structure!
 
+---
+
+If you want to check out the grunt setup, run npm install in the main directory in order to install the packages.
+
+Commands:
+grunt check: will check the js for errors (prints them in terminal) and beautify the css
+
+grunt build: Will delete the build folder and recopy the files to it, minifying html css and javascript in the process.
