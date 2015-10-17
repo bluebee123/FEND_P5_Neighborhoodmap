@@ -97,13 +97,6 @@ html, body {
  color: #eee;
  padding: 0.25em;
 }
-/* #infotext {
-    border:1px solid #808;
-    background-color:#ddd;
-    color:#808;
-    margin-left: 20px;
-    width: 150px;
- }*/
 
 #listview a {
  display: block;
@@ -159,7 +152,10 @@ html, body {
 .ui-tabs-panel {
  overflow-y: auto;
  overflow-x: hidden;
- padding-left: 3.5em;
+ height: calc(100% - 20px);
+ padding-top: 0 !important;
+ padding-left: 2.5em !important;
+ padding-bottom: 0 !important;
 }
 
 .ui-tabs {
@@ -170,7 +166,7 @@ html, body {
 
 .ui-tabs-nav {
  position: absolute;
- width: 180px;
+ width: 200px;
  transform: translate(-100%,0%) rotate(-90deg);
  transform-origin: 100% 0%;
  border: none;
@@ -183,7 +179,7 @@ html, body {
 }
 
 .ui-tabs-nav li {
- float: right;
+ float: right !important;
 }
 
 .ui-widget, .ui-widget-content {
@@ -197,12 +193,6 @@ html, body {
 
 #tabs {
  height: calc(100% - 48px);
-}
-
-#tab-1, #tab-2 {
- height: calc(100% - 20px);
- padding-top: 0;
- padding-left: 2.5em;
 }
 
 #tab-2 h3 {
@@ -270,6 +260,10 @@ html, body {
  #openlistBtn {
   display: none;
  }
+
+ .ui-tab-panel {
+  padding: 0;
+ }
 }
 
 @media only screen and (min-width: 630px) {
@@ -330,12 +324,9 @@ html, body {
   height: calc(100% - 3px);
  }
 
- #tabs, #tab-1,#tab-2 {
+ .tab {
   max-height: 100%;
   padding-bottom: 0;
- }
-
- #tab-1,#tab-2 {
   padding-left: 5px;
  }
 
@@ -380,4 +371,4 @@ html, body {
  .ui-tabs-panel {
   height: 40em;
  }
-};
+}

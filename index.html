@@ -18,10 +18,10 @@
 
 			</div>
 			<!-- class is toggled bysed on observable-->
-			<button id="searchmenuVisibleBtn" data-bind="click: landscapetoggle, css:{activeElement: searchmenuVisible, inactiveElement: !searchmenuVisible()}"><span id="buttonSpan"> Show/Hide Menu </span></button>
+			<button id="searchmenuVisibleBtn" data-bind="click: landscapetoggle, css:{activeElement: searchmenuVisible, inactiveElement: !searchmenuVisible()}"><span>Show/Hide Menu </span></button>
 			<div id="searchmenu" data-bind="visible: searchmenuVisible">
 				<div id="listviewdiv">
-					<button id="openlistBtn" data-bind="click: showList, css:{activeElement: showFilterList, inactiveElement: !showFilterList()}"><span id="buttonSpan"> Browse Animals </span></button>
+					<button id="openlistBtn" data-bind="click: showList, css:{activeElement: showFilterList, inactiveElement: !showFilterList()}"><span>Browse Animals</span></button>
 					<div id="filterdiv" data-bind="visible:showFilterList">
 						<input id="filter" data-bind="textInput: filteredAnimal" type="text" placeholder="Search Animal">
 						<ul id="listview" data-bind="foreach: filteredItems">
@@ -33,7 +33,6 @@
 
 	        	</div>
 
-	        <!--	<p id="infotext"> Purple paws show places where other people on Flickr spotted the animal or something related to it! </p>-->
 	        	<div id="infoWindow" data-bind="stopBinding:true">
 					<div id="tabs">
 						<ul>
@@ -41,7 +40,7 @@
 				   		<li><a href="#tab-2"><span>Flickr Images</span></a></li>
 				  		</ul>
 					<!--hidden content-->
-						<div id="tab-1" data-bind="with: selectedAnimal" >
+						<div id="tab-1" class="tab" data-bind="with: selectedAnimal" >
 							<div id="infContainer">
 								<div id="nameDate">
 									<h3 data-bind="text: anName"></h3>
@@ -49,7 +48,7 @@
 									<p data-bind="text: title"></p>
 								</div>
 
-								<img id="infoImage" src="" data-bind="attr: {src: imgSrc}" alt="Animal image">
+								<img id="infoImage"  src="#" data-bind="attr: {src: imgSrc}" alt="Animal image">
 
 								<div id="wikiCont" >
 									<a data-bind="attr: { href: $parent.wikiLink}, text:$parent.wikiLink"></a>
@@ -58,12 +57,12 @@
 							</div>
 						</div>
 
-						<div id="tab-2">
+						<div id="tab-2" clas="tab">
 							<h3> Related images on Flickr</h3>
 							<span data-bind="text: flickrMessage"></span>
 							<div id ="flickrContainer" data-bind="foreach: flickrImages">
 								<a data-bind="attr: {href: o_url}" target="_blank">
-									<img class="flickrImage" src="" data-bind="attr: {src: t_url}" alt="Flickr Thumbnail" >
+									<img class="flickrImage" src="#" data-bind="attr: {src: t_url}" alt="Flickr Thumbnail" >
 								</a>
 
 							</div>
@@ -77,9 +76,6 @@
 		<script src="bower_components/jquery-ui/jquery-ui.min.js"></script>
 		<script src="bower_components/knockout/dist/knockout.js"></script>
 		<script src="js/app.js"></script>
-		<script src="https://maps.googleapis.com/maps/api/js?libraries=places&key=AIzaSyBvSyOJDU2J8YelkMVS4LGsuI0KVNGqu-I&callback=initialize" async></script>
-
-
-		</script>
+		<script src="https://maps.googleapis.com/maps/api/js?libraries=places&amp;key=AIzaSyBvSyOJDU2J8YelkMVS4LGsuI0KVNGqu-I&amp;callback=initialize" async></script>
 	</body>
 </html>
