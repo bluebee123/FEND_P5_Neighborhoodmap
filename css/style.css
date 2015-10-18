@@ -1,4 +1,5 @@
-html, body {
+html,
+body {
  height: 100%;
  width: 100%;
  margin: 0;
@@ -33,7 +34,8 @@ html, body {
  bottom: 0;
 }
 
-#openlistBtn, #searchmenuVisibleBtn {
+#openlistBtn,
+#searchmenuVisibleBtn {
  width: 100%;
  -moz-border-radius: 3px;
  -webkit-border-radius: 3px;
@@ -182,7 +184,8 @@ html, body {
  float: right !important;
 }
 
-.ui-widget, .ui-widget-content {
+.ui-widget,
+.ui-widget-content {
  background: #ddd;
 }
 
@@ -303,7 +306,7 @@ html, body {
  }
 
  #listview {
-  margin: 0px;
+  margin: 0;
  }
 
  #listview li {
@@ -358,7 +361,7 @@ html, body {
  }
 
  .ui-tabs-nav li.ui-tabs-selected,
-.ui-tabs-nav li.ui-state-active {
+ .ui-tabs-nav li.ui-state-active {
   border-right: 1px solid transparent;
  }
 

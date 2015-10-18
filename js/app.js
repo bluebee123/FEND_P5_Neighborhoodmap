@@ -52,7 +52,7 @@ var initialAnimals = [{
 //initializes and offers methods relating to anything concerning the google map.
 var Map = function() {
     var self = this;
-    this.initialize = function() {
+    self.initialize = function() {
         // Create a map object and specify the DOM element for display.
         self.map = new google.maps.Map(document.getElementById('map'), {
             zoom: 8,
@@ -256,7 +256,7 @@ var ViewModel = function(map) {
     self.mapObject = map;
     self.filteredAnimal = ko.observable("");
     //save all animals in an obserable array, the list gets updated accordingly
-    self.animalList = ko.observableArray([]);
+    self.animalList = ko.observableArray();
     initialAnimals.forEach(function(animalItem) {
         //add the google maps markers
         var marker = self.mapObject.getMarker(animalItem);
