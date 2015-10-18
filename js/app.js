@@ -100,7 +100,7 @@ var Map = function() {
                 lat: animal.lat,
                 lng: animal.lng
             },
-            map: this.map,
+            map: self.map,
             title: animal.anName,
             animation: google.maps.Animation.DROP
         });
@@ -109,6 +109,7 @@ var Map = function() {
         marker.active = ko.observable(false);
         marker.active.subscribe(function() {
             if (marker.active()) {
+                marker.infowindow.open(self.map, marker);
                 marker.setAnimation(google.maps.Animation.BOUNCE);
             } else {
                 //no more animation
@@ -120,12 +121,7 @@ var Map = function() {
         marker.infowindow = new google.maps.InfoWindow({
             content: marker.animal.title
         });
-        //which gets open when the marker is clicked.
-        google.maps.event.addListener(marker, 'click', function() {
-            if (!marker.active()) {
-                marker.infowindow.open(this.map, marker);
-            }
-        });
+
         self.bounds.extend(marker.position);
         return marker;
     };
