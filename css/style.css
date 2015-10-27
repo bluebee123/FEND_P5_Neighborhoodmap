@@ -267,6 +267,10 @@ body {
  .ui-tab-panel {
   padding: 0;
  }
+
+ .ui-tabs-nav {
+  width: 195px;
+ }
 }
 
 @media only screen and (min-width: 630px) {
