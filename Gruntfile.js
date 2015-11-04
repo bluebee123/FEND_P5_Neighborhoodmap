@@ -7,11 +7,11 @@ module.exports = function(grunt) {
     copy: {
       build: {
 
-        cwd: "C:/Users/Mups/NoraStuff/Udacity_FrontendDeveloper/Neighborhood Map/Neighborhood-map/",
+        cwd: "C:/Users/Mups/NoraStuff/Udacity_FrontendDeveloper/neighborhood-map/FEND_P5_Neighborhoodmap/",
         src: ["index.html",
         "css/style.css","js/app.js",
         "img/**",
-        "bower-components/**"],
+        "bower_components/**"],
         dest: 'build/',
         expand: true
       },

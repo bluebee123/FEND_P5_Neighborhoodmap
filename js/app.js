@@ -1,7 +1,7 @@
 //some initial Animal data, hard coded
 var initialAnimals = [{
         anName: "Southern Right Whale",
-        imgSrc: "img/whale.jpg",
+        imgSrc: "img/whale_.jpg",
         title: "My horrible pic of a whale",
         lat: -38.428914,
         lng: 142.521175,
@@ -9,7 +9,7 @@ var initialAnimals = [{
         myMarkers: []
     }, {
         anName: "Wallaby",
-        imgSrc: "img/kang.jpg",
+        imgSrc: "img/wallaby_.jpg",
         title: "Feeding the Wallaby",
         lat: -38.698435,
         lng: 143.229360,
@@ -17,7 +17,7 @@ var initialAnimals = [{
         myMarkers: []
     }, {
         anName: "Echidna",
-        imgSrc: "img/echidna.jpg",
+        imgSrc: "img/echidna_.jpg",
         title: "Lucky find while hiking",
         lat: -37.181397,
         lng: 145.861132,
@@ -25,7 +25,7 @@ var initialAnimals = [{
         myMarkers: []
     }, {
         anName: "Little Penguin",
-        imgSrc: "img/littlePenguin.jpg",
+        imgSrc: "img/littlePenguin_.jpg",
         title: "© Penguin Parade, http://www.penguins.org.au",
         lat: -38.514876,
         lng: 145.144377,
@@ -33,7 +33,7 @@ var initialAnimals = [{
         myMarkers: []
     }, {
         anName: "Possum",
-        imgSrc: "img/possum.jpg",
+        imgSrc: "img/possum_.jpg",
         title: "Possum in a tree",
         lat: -37.930777,
         lng: 145.111319,
@@ -41,7 +41,7 @@ var initialAnimals = [{
         myMarkers: []
     }, {
         anName: "Koala",
-        imgSrc: "img/koala.jpg",
+        imgSrc: "img/koala_.jpg",
         title: "Koala by the road",
         lat: -38.805814,
         lng: 143.535075,
@@ -132,6 +132,7 @@ var InfoboxModel = function(mapobject) {
     var self = this;
     self.mapObject = mapobject;
     self.map = mapobject.getMap(); //save the actual google map
+    self.placeholder = ko.observable(true);
     self.selectedAnimal = ko.observable(null);
     self.lastAnimal = null;
     /*subscribe to changes of selectedAnimal manually in order to update the google map markers, fire ajax when the
@@ -139,6 +140,7 @@ var InfoboxModel = function(mapobject) {
 
     */
     self.selectedAnimal.subscribe(function() {
+        self.placeholder(false);
         if (self.selectedAnimal() === self.lastAnimal) {
             //this means, the button or the marker has been clicked again, hence we close infoBubble and set to inactive
             self.selectedAnimal(null);
@@ -300,7 +302,7 @@ var ViewModel = function(map) {
     self.setVisibilities = function() {
         self.showFilterList(true);
         self.searchmenuVisible(true);
-        if (window.innerWidth < 400) {
+        if (window.innerWidth < 530) {
             self.showFilterList(false);
         }
         //workaround to see if landscape on a small screen...
@@ -310,7 +312,7 @@ var ViewModel = function(map) {
     };
     self.setVisibilities();
     self.showList = function() {
-        if (window.innerWidth < 400) {
+        if (window.innerWidth < 530) {
             self.showFilterList(!self.showFilterList());
         }
     };

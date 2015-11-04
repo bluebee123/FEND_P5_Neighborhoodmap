@@ -33,26 +33,32 @@
 	        	</div>
 
 	        	<div id="infoWindow" data-bind="stopBinding:true">
+
 					<div id="tabs">
+						<div class="placeholderText" data-bind="visible: placeholder" >
+									<p> This app shows some of my wildlife sightings. Upon clicking on a marker or on an animal in the list to the left, information from Wikipedia and related images on Flickr are retrieved and shown in this info panel. You can search through the animals using the search filter. MVC is incorporated using knockoutJS. This is an ongoing project, future goals consist in adding a database and the option to add more animals to the map.</p>
+								</div>
 						<ul>
 				    	<li><a href="#tab-1"><span>Pic and Info</span></a></li>
 				   		<li><a href="#tab-2"><span>Flickr Images</span></a></li>
 				  		</ul>
-					<!--hidden content-->
 						<div id="tab-1" class="tab" data-bind="with: selectedAnimal" >
+
 							<div id="infContainer">
+
 								<div id="nameDate">
 									<h3 data-bind="text: anName"></h3>
 									<p> Seen on: <span data-bind="text: dateSeen"></span></p>
 									<p data-bind="text: title"></p>
 								</div>
 
-								<img id="infoImage"  src="#" data-bind="attr: {src: imgSrc}" alt="Animal image">
 
 								<div id="wikiCont" >
 									<a data-bind="attr: { href: $parent.wikiLink}, text:$parent.wikiLink"></a>
 									<p data-bind="text: $parent.wikiParagraph"></p>
 								</div>
+
+								<img id="infoImage"  src="#" data-bind="attr: {src: imgSrc}" alt="Animal image">
 							</div>
 						</div>
 
